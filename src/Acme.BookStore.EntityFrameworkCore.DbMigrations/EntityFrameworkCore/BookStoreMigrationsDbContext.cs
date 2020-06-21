@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Acme.BookStore.WeixinOpen.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -43,6 +44,8 @@ namespace Acme.BookStore.EntityFrameworkCore
             /* Configure your own tables/entities inside the ConfigureBookStore method */
 
             builder.ConfigureBookStore();
+
+            builder.ConfigureWeixinManagement();
         }
     }
 }

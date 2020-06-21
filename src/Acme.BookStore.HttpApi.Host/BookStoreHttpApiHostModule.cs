@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Acme.BookStore.EntityFrameworkCore;
+using Acme.BookStore.IdentityServer;
 using Acme.BookStore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic;
 using Microsoft.OpenApi.Models;
@@ -36,11 +37,21 @@ namespace Acme.BookStore
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAspNetCoreAuthenticationJwtBearerModule),
         typeof(AbpAccountWebIdentityServerModule),
-        typeof(AbpAspNetCoreSerilogModule)
+        typeof(AbpAspNetCoreSerilogModule),
+        typeof(AbpLocalizationModule)
         )]
     public class BookStoreHttpApiHostModule : AbpModule
     {
         private const string DefaultCorsPolicyName = "Default";
+
+        public override void PreConfigureServices(ServiceConfigurationContext context)
+        {
+            base.PreConfigureServices(context);
+            // 自定义GrantValidator
+            context.Services.PreConfigure<IIdentityServerBuilder>(
+                builder => { builder.AddExtensionGrantValidator<UserWithTenantGrantValidator>(); }
+            );
+        }
 
         public override void ConfigureServices(ServiceConfigurationContext context)
         {

@@ -1,0 +1,8 @@
+{
+  "culture": "en",
+  "texts": {
+    "Permission:WeixinManagement": "Wexin Management",
+    "Permission:ChangeSettings": "Change Settings",
+    "Permission:ChangeSettings:Edit": "Edit"
+  }
+}
