@@ -1,8 +1,0 @@
-{
-  "culture": "zh-Hans",
-  "texts": {
-    "Permission:WeixinManagement": "微信管理",
-    "Permission:ChangeSettings": "改变设置",
-    "Permission:ChangeSettings:Edit": "编辑"
-  }
-}

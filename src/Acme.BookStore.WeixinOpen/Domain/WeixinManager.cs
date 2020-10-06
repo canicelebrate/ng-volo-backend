@@ -24,7 +24,7 @@ namespace Acme.BookStore.WeixinOpen.Domain
     public class WeixinManager : ITransientDependency
     {
         private readonly IDistributedCache<AccessTokeCacheItem> _tokenCache;
-        private readonly IRedisClient _redisClient;
+        //private readonly IRedisClient _redisClient;
         private readonly IRepository<WechatUserinfo> _wechatUserRepository;
         private readonly Volo.Abp.ObjectMapping.IObjectMapper _mapper;
         private readonly ICurrentTenant _currentTenant;
@@ -33,14 +33,14 @@ namespace Acme.BookStore.WeixinOpen.Domain
 
         public WeixinManager(
             IDistributedCache<AccessTokeCacheItem> tokenCache,
-            IRedisClient redisClient,
+            //IRedisClient redisClient,
             IRepository<WechatUserinfo> wechatUserRepository,
             Volo.Abp.ObjectMapping.IObjectMapper mapper,
             ICurrentTenant currentTenant,
             ISettingProvider setting)
         {
             _tokenCache = tokenCache;
-            _redisClient = redisClient;
+            //_redisClient = redisClient;
             _wechatUserRepository = wechatUserRepository;
             _mapper = mapper;
             _currentTenant = currentTenant;

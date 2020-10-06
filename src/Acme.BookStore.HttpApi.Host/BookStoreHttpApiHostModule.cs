@@ -19,12 +19,19 @@ using Volo.Abp.Account.Web;
 using Volo.Abp.AspNetCore.Authentication.JwtBearer;
 using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc;
+using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.Autofac;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
+using System.Threading.Tasks;
+
+using Acme.BookStore.WeixinOpen.Extensions;
+using Microsoft.Extensions.Options;
+using Senparc.CO2NET;
+using Senparc.Weixin.Entities;
 
 namespace Acme.BookStore
 {
@@ -44,12 +51,21 @@ namespace Acme.BookStore
     {
         private const string DefaultCorsPolicyName = "Default";
 
+        IOptionsMonitor<SenparcSetting> _senparcSetting;
+        IOptionsMonitor<SenparcWeixinSetting> _senparcWeixinSetting;
+        public BookStoreHttpApiHostModule()
+        {
+
+        }
+
         public override void PreConfigureServices(ServiceConfigurationContext context)
         {
             base.PreConfigureServices(context);
             // 自定义GrantValidator
             context.Services.PreConfigure<IIdentityServerBuilder>(
-                builder => { builder.AddExtensionGrantValidator<UserWithTenantGrantValidator>(); }
+                builder => { 
+                    builder.AddExtensionGrantValidator<UserWithTenantGrantValidator>();
+                }
             );
         }
 
@@ -105,12 +121,28 @@ namespace Acme.BookStore
                 .AddIdentityServerAuthentication(options =>
                 {
                     options.Authority = configuration["AuthServer:Authority"];
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = true;
                     options.ApiName = "BookStore";
                     options.JwtBackChannelHandler = new HttpClientHandler()
                     {
                         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                     };
+                    options.JwtBearerEvents = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents()
+                    {
+                        OnAuthenticationFailed = async context =>
+                        {
+                            //context.Options.MetadataAddress = configuration["AuthServer:Authority"] + "/.well-known/openid-configuration";
+
+                            await Task.CompletedTask;
+                        },
+                        OnChallenge = async context =>
+                        {
+                            //context.Options.MetadataAddress = configuration["AuthServer:Authority"] + "/.well-known/openid-configuration";
+                            await Task.CompletedTask;
+                        }
+                    };
+
+                    
                 });
         }
 
@@ -162,22 +194,39 @@ namespace Acme.BookStore
         public override void OnApplicationInitialization(ApplicationInitializationContext context)
         {
             var app = context.GetApplicationBuilder();
+            var env = context.GetEnvironment();
+
+            _senparcSetting = context.ServiceProvider.GetService<IOptionsMonitor<SenparcSetting>>();
+            _senparcWeixinSetting = context.ServiceProvider.GetService<IOptionsMonitor<SenparcWeixinSetting>>();
+
+
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseErrorPage();
+            }
 
             app.UseCorrelationId();
             app.UseVirtualFiles();
             app.UseRouting();
             app.UseCors(DefaultCorsPolicyName);
-            app.UseAuthentication();
-            app.UseJwtTokenMiddleware();
 
+            app.UseSenparc(env, _senparcSetting.CurrentValue, _senparcWeixinSetting.CurrentValue);
+
+            app.UseAuthentication();
+            app.UseJwtTokenMiddleware();    
+            
             if (MultiTenancyConsts.IsEnabled)
             {
                 app.UseMultiTenancy();
             }
 
+            app.UseAbpRequestLocalization();
             app.UseIdentityServer();
             app.UseAuthorization();
-            app.UseAbpRequestLocalization();
 
             app.UseSwagger();
             app.UseSwaggerUI(options =>
@@ -187,7 +236,7 @@ namespace Acme.BookStore
 
             app.UseAuditing();
             app.UseAbpSerilogEnrichers();
-            app.UseMvcWithDefaultRouteAndArea();
+            app.UseConfiguredEndpoints();
         }
     }
 }

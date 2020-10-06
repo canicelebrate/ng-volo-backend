@@ -14,7 +14,7 @@ namespace Acme.BookStore.EntityFrameworkCore
             //builder.Entity<YourEntity>(b =>
             //{
             //    b.ToTable(BookStoreConsts.DbTablePrefix + "YourEntities", BookStoreConsts.DbSchema);
-
+            //    b.ConfigureByConvention(); //auto configure for the base class props
             //    //...
             //});
         }

@@ -26,11 +26,16 @@ namespace Acme.BookStore
         )]
     public class BookStoreDomainSharedModule : AbpModule
     {
+        public override void PreConfigureServices(ServiceConfigurationContext context)
+        {
+            BookStoreModulePropertyConfigurator.Configure();
+        }
+
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
             Configure<AbpVirtualFileSystemOptions>(options =>
             {
-                options.FileSets.AddEmbedded<BookStoreDomainSharedModule>("Acme.BookStore");
+                options.FileSets.AddEmbedded<BookStoreDomainSharedModule>();
             });
 
             Configure<AbpLocalizationOptions>(options =>
@@ -39,6 +44,8 @@ namespace Acme.BookStore
                     .Add<BookStoreResource>("en")
                     .AddBaseTypes(typeof(AbpValidationResource))
                     .AddVirtualJson("/Localization/BookStore");
+                
+                options.DefaultResourceType = typeof(BookStoreResource);
             });
         }
     }

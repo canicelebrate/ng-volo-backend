@@ -10,6 +10,8 @@ namespace Acme.BookStore.EntityFrameworkCore
 
         public static void Configure()
         {
+            BookStoreModulePropertyConfigurator.Configure();
+            
             OneTimeRunner.Run(() =>
             {
                 /* You can configure entity extension properties for the

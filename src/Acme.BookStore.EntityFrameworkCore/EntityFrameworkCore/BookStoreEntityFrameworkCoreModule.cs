@@ -12,6 +12,8 @@ using Volo.Abp.Modularity;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
+using Acme.BookStore.WeixinOpen;
+using Acme.BookStore.WeixinOpen.EntityFrameworkCore;
 
 namespace Acme.BookStore.EntityFrameworkCore
 {
