@@ -45,7 +45,6 @@ namespace Acme.BookStore.WeixinOpen.Application
         //private readonly IAppProvider _appProvider;
         private WexinOpenOptions _options;
         private ISettingManager _settingManager;
-        private ILogger _logger;
 
         public WexinAppService(
             IGuidGenerator guidGenerator,
@@ -64,8 +63,7 @@ namespace Acme.BookStore.WeixinOpen.Application
             IUnitOfWorkManager unitOfWorkManager,
             //IAppProvider appProvider
             IOptions<WexinOpenOptions> optionsAccessor,
-            ISettingManager settingManager,
-            ILogger logger
+            ISettingManager settingManager
         )
         {
             ObjectMapperContext = typeof(WeixinModule);
@@ -83,7 +81,6 @@ namespace Acme.BookStore.WeixinOpen.Application
             _unitOfWorkManager = unitOfWorkManager;
             _options = optionsAccessor.Value;
             _settingManager = settingManager;
-            _logger = logger;
         }
 
 
@@ -172,8 +169,26 @@ namespace Acme.BookStore.WeixinOpen.Application
                 }
 
                 var serverClient = _httpClientFactory.CreateClient();
+                var authServerUrl = _configuration["AuthServer:Authority"];
 
-                var disco = await serverClient.GetDiscoveryDocumentAsync(_configuration["AuthServer:Authority"]);
+                //var disco = await serverClient.GetDiscoveryDocumentAsync(_configuration["AuthServer:Authority"]);
+
+
+                var disco = await serverClient.GetDiscoveryDocumentAsync(new DiscoveryDocumentRequest
+                {
+                    Address = authServerUrl,
+                    Policy =
+                    {
+                        ValidateIssuerName = false,
+                        ValidateEndpoints = false
+                    }
+                });
+
+                if (disco.IsError)
+                {
+                    throw new AbpException(disco.Error);
+                }
+
 
                 var result = await serverClient.RequestTokenAsync(
                     new TokenRequest
@@ -209,7 +224,7 @@ namespace Acme.BookStore.WeixinOpen.Application
             }
             catch(Exception ex)
             {
-                _logger.Error(ex, "小程序登录验证失败。");
+                Log.Logger.Error(ex, "小程序登录验证失败。");
                 throw;
             }
         }
